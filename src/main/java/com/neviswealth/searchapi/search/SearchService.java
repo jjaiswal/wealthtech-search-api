@@ -59,6 +59,7 @@ public class SearchService {
         // 1. Client search (lexical via ES multi_match)
         List<Map<String, Object>> clientHits = esSyncService.searchClients(q);
         for (Map<String, Object> hit : clientHits) {
+            if (clientId != null && !clientId.toString().equals(hit.get("id"))) continue;
             results.add(SearchHit.client(toClientResponse(hit)));
         }
 
