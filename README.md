@@ -1,4 +1,4 @@
-# WealthTech Search API
+# WealthTech Search API [Demo Video](https://drive.google.com/file/d/1sNdN2PEDR0s3_dwcCabJz08Qmi6JNHeD/view?usp=sharing)
 
 A search API over **clients** and **documents** for a WealthTech advisor platform. It supports two kinds of search, deliberately using the right technique for each:  
 
