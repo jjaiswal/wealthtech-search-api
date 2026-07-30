@@ -1,4 +1,4 @@
-# WealthTech Search API — Interview Demo Cheat Sheet
+# WealthTech Search API — Interview Demo
 
 ## 🚀 Quick Context
 

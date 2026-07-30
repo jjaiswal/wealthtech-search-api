@@ -2,13 +2,9 @@
 
 A search API over **clients** and **documents** for a WealthTech advisor platform. It supports two kinds of search, deliberately using the right technique for each:  
 
-
 1. **Client search** — find clients by matches in their name, email, or description. Case-insensitive, fuzzy, and prefix matching (e.g. `NevisWealth` → `john.doe@neviswealth.com`).
 2. **Document search** — find documents by *semantically similar* content, even with no shared words (e.g. `address proof` → a `utility bill` document). Embedding + vector search.
 3. **Document summary** — each document in the search results includes a short **LLM-generated summary** of its content (produced at ingest by a local Ollama model — no external API key).
-
-  
-
 
 > **Design rationale, tradeoffs, and architecture: DESIGN.md.** **A guided, copy-pasteable demo of every endpoint: docs/DEMO.md.**
 
@@ -26,13 +22,24 @@ A search API over **clients** and **documents** for a WealthTech advisor platfor
 
 Everything runs as five containers via Docker Compose (or Podman Compose).  
 
-
 ---
 
 ## Running it
 
-**Prerequisites:** Docker with Docker Compose, or Podman with `podman compose`.  
+**Prerequisites:** 
 
+
+|                                                        |          |                     |
+| ------------------------------------------------------ | -------- | ------------------- |
+| Tool                                                   | Version  | Check               |
+| Java                                                   | 21+      | `java -version`     |
+| Maven wrapper                                          | included | `./mvnw -v`         |
+| Docker + Docker Compose **or** Podman + podman-compose | latest   | `podman --version`  |
+| jq                                                     | any      | `jq --version`      |
+| Python                                                 | 3.9+     | `python3 --version` |
+
+
+Docker with Docker Compose, or Podman with `podman compose`.  
 
 ```
 # Docker
@@ -45,7 +52,6 @@ podman compose up --build
 This starts five services and waits for all dependencies to be healthy before the API starts:  
 
 
-
 |                 |       |                                      |
 | --------------- | ----- | ------------------------------------ |
 | Service         | Port  | Role                                 |
@@ -56,11 +62,12 @@ This starts five services and waits for all dependencies to be healthy before th
 | `db`            | 5432  | PostgreSQL + pgvector                |
 
 
+**First run note:** Ollama downloads the `qwen2.5:1.5b` model (~1 GB) on first startup. Subsequent runs use the cached model and start quickly. Elasticsearch takes 60–90s to initialise on first run — the API waits for it automatically.
+
 On first startup the API **seeds a few sample clients and documents** (only if the database is empty), so search works immediately — including the two examples below.  
 
-
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
-- **OpenAPI JSON:** http://localhost:8080/v3/api-docs (also exported to `docs/openapi.json`)
+- **Swagger UI:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **OpenAPI JSON:** [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs) (also exported to `docs/openapi.json`)
 
 ---
 
@@ -90,7 +97,6 @@ curl "http://localhost:8080/search?q=NevisWealth"
 ```
 
 `NevisWealth` matches inside the email `john.doe@neviswealth.com` via Elasticsearch wildcard search — case-insensitive, no exact word match needed.  
-
 
 ### 2. Document search — `address proof` finds the utility bill
 
@@ -135,7 +141,6 @@ curl "http://localhost:8080/search?q=address%20proof"
 
 `address proof` shares no words with `utility bill`, yet both genuine proof-of-address documents (utility bill, council tax) rank at the top — semantic ranking, not keyword matching. Each document hit carries an inline LLM-generated `summary` (computed at ingest). Scores are Elasticsearch hybrid scores (BM25 + KNN) — they rank documents relative to each other, not on an absolute 0–1 scale.  
 
-
 ### 3. Create a client
 
 ```
@@ -152,7 +157,6 @@ curl -X POST http://localhost:8080/clients \
 
 Returns `201 Created` with the new client (including a generated `id` and `created_at`).  
 
-
 ### 4. Add a document (embedded on ingest)
 
 ```
@@ -166,7 +170,6 @@ curl -X POST "http://localhost:8080/clients/{clientId}/documents" \
 
 Returns `201`. The content is embedded at ingest so search stays fast at read time.  
 
-
 ### 5. Scope document search to one client *(optional)*
 
 ```
@@ -174,7 +177,6 @@ curl "http://localhost:8080/search?q=address%20proof&client_id={clientId}"
 ```
 
 `client_id` is optional. Omitted → global search (the default). Present → document search is restricted to that client. See DESIGN.md §7.  
-
 
 ---
 
@@ -191,7 +193,6 @@ curl "http://localhost:8080/search?q=address%20proof&client_id={clientId}"
 
 Full, interactive contract: **Swagger UI** (above). `/search` returns a **flat array** of typed items (`{ type, score, entity }`) — clients first, then documents by score. See DESIGN.md §D6 for the ranking rationale.  
 
-
 ---
 
 ## Testing
@@ -202,13 +203,11 @@ Full, interactive contract: **Swagger UI** (above). `/search` returns a **flat a
 
 Integration tests run against a **real Postgres + real Elasticsearch** instance (no Testcontainers); the embedder and summarizer are mocked for speed and determinism. Tests cover the two spec examples end-to-end, HTTP status codes, edge cases (blank/missing query, invalid email, duplicate email, missing client), and the semantic relevance score floor. See DESIGN.md §6.  
 
-
 ---
 
 ## What I'd do differently / next steps
 
 A fuller list is in DESIGN.md §7. Highlights:  
-
 
 - **Embedding model:** swap the local model for a hosted API (e.g. OpenAI) behind the existing `EmbeddingClient` interface — a one-line change, key injected via env.
 - **Scale:** benchmarked at 100k documents — client lexical search **19 ms**, document semantic search **53 ms** end-to-end. Beyond this scale: batch/async ingestion, result pagination, HNSW parameter tuning.
@@ -221,7 +220,6 @@ A fuller list is in DESIGN.md §7. Highlights:
 
 If image builds fail with certificate errors behind a TLS-inspecting proxy (e.g. Zscaler), place the proxy's root CA as a `*.crt` file in the project root (and in `embedder/`), then:  
 
-
 ```
 TRUST_LOCAL_CA=1 docker compose up --build
 # or
@@ -230,13 +228,11 @@ TRUST_LOCAL_CA=1 podman compose up --build
 
 Without the flag (the default) builds use the standard trust store. The `*.crt` files are git-ignored and never committed.  
 
-
 ---
 
 ## Scale benchmark
 
 Bulk-inserts synthetic data directly into Postgres and measures end-to-end search latency via the API:  
-
 
 ```
 ./dev/benchmark.sh              # default: 1,000 clients × 100 docs = 100k documents

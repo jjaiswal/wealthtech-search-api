@@ -42,8 +42,7 @@ services:
       retries: 30
     volumes:
       - ollama_data:/root/.ollama
-      - ./embedder/zscaler-root.crt:/tmp/zscaler-root.crt:ro
-    entrypoint: ["/bin/sh", "-c", "cat /tmp/zscaler-root.crt >> /etc/ssl/certs/ca-certificates.crt && /bin/ollama serve"]
+    entrypoint: ["/bin/sh", "-c", "/bin/ollama serve"]
 
   ollama-pull:
     image: ollama/ollama
