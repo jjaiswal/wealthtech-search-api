@@ -1,0 +1,5 @@
+# Test-profile overrides. The relevance floor is disabled here (0.0) so that ranking tests
+# assert *ordering* independently of the production threshold; the floor itself is covered by
+# a dedicated test that sets it explicitly.
+search:
+  min-score: 0.0

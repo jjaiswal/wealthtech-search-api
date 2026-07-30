@@ -1,0 +1,218 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "WealthTech Search API",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/clients": {
+            "post": {
+                "tags": ["clients"],
+                "summary": "Create a client",
+                "operationId": "createClient",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClientRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Client created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ClientResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body"
+                    }
+                }
+            }
+        },
+        "/clients/{clientId}/documents": {
+            "post": {
+                "tags": ["documents"],
+                "summary": "Add a document to a client",
+                "operationId": "createDocument",
+                "parameters": [
+                    {
+                        "name": "clientId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DocumentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Document created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DocumentResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body"
+                    },
+                    "404": {
+                        "description": "Client not found"
+                    }
+                }
+            }
+        },
+        "/search": {
+            "get": {
+                "tags": ["search"],
+                "summary": "Search clients and documents",
+                "operationId": "search",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SearchResult"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or blank query parameter"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ClientRequest": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    }
+                }
+            },
+            "ClientResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "DocumentRequest": {
+                "type": "object",
+                "required": ["type", "content"],
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "example": "passport"
+                    },
+                    "content": {
+                        "type": "string",
+                        "example": "Passport issued 2021"
+                    }
+                }
+            },
+            "DocumentResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "clientId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SearchResult": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "Hit type: \"client\" or \"document\"",
+                        "example": "document"
+                    },
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Client name (present for client hits)"
+                    },
+                    "documentType": {
+                        "type": "string",
+                        "description": "Document type (present for document hits)"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Document content (present for document hits)"
+                    },
+                    "clientId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Owning client ID (present for document hits)"
+                    },
+                    "score": {
+                        "type": "number",
+                        "format": "float",
+                        "description": "Relevance score (Elasticsearch hybrid BM25 + KNN) — present for document hits only"
+                    }
+                }
+            }
+        }
+    }
+}

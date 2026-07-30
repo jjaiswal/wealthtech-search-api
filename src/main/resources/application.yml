@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: wealthtech-search-api
+  datasource:
+    # Overridden by env vars in docker-compose; defaults suit local run against a mapped port.
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/nevis}
+    username: ${DB_USER:nevis}
+    password: ${DB_PASSWORD:nevis}
+  jpa:
+    hibernate:
+      ddl-auto: none          # schema is created by schema.sql (init), not Hibernate
+    open-in-view: false
+  sql:
+    init:
+      mode: always            # run schema.sql on startup
+  jackson:
+    # API uses snake_case (per the spec: first_name, social_links, client_id, created_at);
+    # Java stays camelCase. This maps between them globally.
+    property-naming-strategy: SNAKE_CASE
+
+server:
+  port: 8080
+
+# Document search relevance floor: minimum cosine similarity for a document to be returned.
+# Tunable per corpus/model (DESIGN §D6a). Default sits between real matches (~0.30) and noise (~0.17).
+search:
+  min-score: ${SEARCH_MIN_SCORE:0.58}
+
+# Embedder sidecar (Step 5). Base URL points at the compose service; localhost for local runs.
+embedder:
+  base-url: ${EMBEDDER_URL:http://localhost:8000}
+  timeout-ms: 5000
+
+# Ollama local LLM for document summarization (runs as a container in compose).
+ollama:
+  base-url: ${OLLAMA_URL:http://localhost:11434}
+  model: ${OLLAMA_MODEL:qwen2.5:1.5b}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+elasticsearch:
+  url: ${ELASTICSEARCH_URL:http://localhost:9200}
+  init-max-attempts: 20
+  init-retry-delay-ms: 5000

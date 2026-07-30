@@ -1,0 +1,40 @@
+# ---- Secrets / env (NEVER commit — this is a public repo) ----
+.env
+.env.*
+*.pem
+*.key
+secrets/
+**/application-local.properties
+
+# ---- Personal notes (not part of the deliverable) ----
+STUDY-NOTES.md
+
+# ---- Corporate proxy CA (local build only; never commit) ----
+**/zscaler-root.crt
+*.crt
+
+# ---- Java / Maven ----
+target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+
+# ---- Python (embedding sidecar) ----
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# ---- IDE / editor ----
+.idea/
+*.iml
+.vscode/
+*.swp
+.DS_Store
+
+# ---- Logs / tmp ----
+*.log
+tmp/
