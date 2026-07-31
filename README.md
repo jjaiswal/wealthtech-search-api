@@ -18,7 +18,7 @@ A search API over **clients** and **documents** for a WealthTech advisor platfor
 - **Embeddings:** `all-MiniLM-L6-v2` (384-dim) served by a small Python sidecar — no API keys, runs fully offline
 - **Summarization:** local LLM ([Ollama](https://ollama.com/) + `qwen2.5:1.5b`) generates fluent document summaries at ingest — no external API key
 - **API docs:** OpenAPI / Swagger UI (springdoc)
-- **Tests:** JUnit 5, real Postgres + real Elasticsearch (no Testcontainers); embedder + summarizer mocked
+- **Tests:** JUnit 5, real Postgres + real Elasticsearch; embedder + summarizer mocked
 
 Everything runs as five containers via Docker Compose (or Podman Compose).  
 
@@ -27,7 +27,6 @@ Everything runs as five containers via Docker Compose (or Podman Compose).
 ## Running it
 
 **Prerequisites:** 
-
 
 |                                                        |          |                     |
 | ------------------------------------------------------ | -------- | ------------------- |
