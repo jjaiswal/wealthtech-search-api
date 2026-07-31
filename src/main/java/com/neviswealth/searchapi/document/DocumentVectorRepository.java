@@ -44,31 +44,6 @@ public class DocumentVectorRepository {
                 clientId, title, content, summary, VectorLiteral.toPgVector(embedding));
     }
 
-    /**
-     * Returns the top-N documents nearest to the query vector (cosine distance, HNSW-indexed).
-     *
-     * @param clientId if non-null, restrict results to that client; null = search all.
-     */
-    public List<DocumentMatch> searchByEmbedding(float[] queryEmbedding, UUID clientId, int topN) {
-        String q = VectorLiteral.toPgVector(queryEmbedding);
-
-        StringBuilder sql = new StringBuilder("""
-                SELECT id, client_id, title, summary, created_at,
-                       (embedding <=> ?::vector) AS distance
-                FROM documents
-                WHERE embedding IS NOT NULL
-                """);
-        List<Object> args = new ArrayList<>();
-        args.add(q);
-        if (clientId != null) {
-            sql.append("  AND client_id = ?\n");
-            args.add(clientId);
-        }
-        sql.append("ORDER BY distance\nLIMIT ?");
-        args.add(topN);
-
-        return jdbc.query(sql.toString(), DOCUMENT_MATCH_MAPPER, args.toArray());
-    }
 
     public List<DocumentForReindex> findAllForReindex() {
         return jdbc.query(
@@ -89,13 +64,4 @@ public class DocumentVectorRepository {
                 )
         );
     }
-
-    private static final RowMapper<DocumentMatch> DOCUMENT_MATCH_MAPPER = (rs, rowNum) ->
-            new DocumentMatch(
-                    rs.getObject("id", UUID.class),
-                    rs.getObject("client_id", UUID.class),
-                    rs.getString("title"),
-                    rs.getString("summary"),
-                    rs.getObject("created_at", OffsetDateTime.class),
-                    rs.getDouble("distance"));
 }

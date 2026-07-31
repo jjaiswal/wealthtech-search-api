@@ -92,7 +92,7 @@ Expected response (`201 Created`):
 ## 4. Search — Lexical (Client Name)
 
 ```bash
-curl -s "http://localhost:8080/search?q=John" | jq
+curl -s "http://localhost:8080/search?q=NevisWealth" | jq
 ```
 
 > Returns a `SearchHit` with `type: "client"` and the full client entity (`first_name`, `last_name`, `email`)
@@ -102,7 +102,7 @@ curl -s "http://localhost:8080/search?q=John" | jq
 ## 5. Search — Semantic (Document Content)
 
 ```bash
-curl -s "http://localhost:8080/search?q=electricity+bill" | jq
+curl -s "http://localhost:8080/search?q=address+proof" | jq
 ```
 
 Returns `SearchHit` array ranked by **hybrid BM25 + KNN** score:
